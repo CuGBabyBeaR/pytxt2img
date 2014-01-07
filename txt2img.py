@@ -34,13 +34,13 @@ f.close()
 
 # 绘入文本
 wraptext = [u"　"]
-l = 0
+l = fontsize
 for t in text:
     fi = t
     delta = font.getsize(t)[0]
     if t == '\n':
         wraptext += [u"　"]
-        l = 0
+        l = fontsize
     elif l + delta > lineWidth:
         wraptext += [t]
         l = delta

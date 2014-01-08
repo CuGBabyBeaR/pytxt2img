@@ -13,7 +13,8 @@ fontname = config.get('input','fontname')
 
 left = int(config.get('output','left'))
 top = int(config.get('output','top'))
-lineWidth = int(config.get('output','lineWidth'))
+width = int(config.get('output','width'))
+height = int(config.get('output','height'))
 fontsize = int(config.get('output','fontsize'))
 leading = int(config.get('output','leading'))
 lineHeight = fontsize + leading
@@ -21,8 +22,6 @@ lineHeight = fontsize + leading
 filename = config.get('output','name')
 filetype = config.get('output','type')
 
-img = Image.open(bg)
-draw = ImageDraw.Draw(img)
 font = ImageFont.truetype(fontname, fontsize)
 
 # 读取文本
@@ -32,7 +31,7 @@ if text[0] == u'\ufeff':
     text = text[1:]
 f.close()
 
-# 绘入文本
+# 处理文本
 wraptext = [u"　"]
 l = fontsize
 for t in text:
@@ -41,16 +40,34 @@ for t in text:
     if t == '\n':
         wraptext += [u"　"]
         l = fontsize
-    elif l + delta > lineWidth:
+    elif l + delta > width:
         wraptext += [t]
         l = delta
     else:
         wraptext[-1] += t
         l += delta
 
+
+# 绘制文本并保存
+ltop = top
+filecounter = 1
+pattern = "%s%04d.%s"
+filename = filename.split('.')
+
+img = Image.open(bg)
+draw = ImageDraw.Draw(img)
+
 for i, txt in enumerate(wraptext):
-    draw.text((left, lineHeight * i + top), txt, font=font, fill='black')
+    if ltop + lineHeight > height:
+        img.save(pattern % (filename[0],filecounter,filename[1]), filetype)
+        filecounter += 1
+        img = Image.open(bg)
+        draw = ImageDraw.Draw(img)
+        ltop = top
+
+    draw.text((left, ltop), txt, font=font, fill='black')
+    ltop += lineHeight
     pass
 
 # 保存到文件
-img.save(filename, filetype)
+img.save(pattern % (filename[0],filecounter,filename[1]), filetype)
